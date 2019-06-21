@@ -1,0 +1,57 @@
+{% extends 'admin/detail_base.html' %}
+
+{% block style %}
+    <style>
+
+    </style>
+{% endblock %}
+
+{% macro item_field(key, wide='') %}
+    <div class="field">
+        <label for="{{ key }}">{{ key }}</label>
+        {% if key in model.Meta.widgets %}
+            {{ model.Meta.widgets[key] }}
+        {% else %}
+            <input type="{{ model.column_type(key, format_='html') }}" name="{{ key }}"
+                   value=""
+                    {% if not key in model.list_editable %} disabled {% endif %}
+            >
+        {% endif %}
+    </div>
+{% endmacro %}
+
+{% block contents %}
+    <form action="{{ url_for('admin.' + model.table_name() + '_create') }}" method="post"
+          class="ui form">
+        <h3 class="ui dividing header">{{ model.table_name() | capitalize }}</h3>
+
+        {% if not model.field_group %}
+            {% for key in model.keys %}
+                {{ item_field(key) }}
+            {% endfor %}
+        {% else %}
+            {% for group in model.field_group %}
+                {% if group %}
+                    <div class="fields">
+                        {% for key in group %}
+                            {{ item_field(key) }}
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="ui divider"></div>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+
+        <div class="ui hidden divider"></div>
+        <button type="submit" class="ui primary button">생성</button>
+
+        {% if model.deletable %}
+            <button class="ui negative button">삭제</button>
+        {% endif %}
+    </form>
+
+{% endblock %}
+
+{% block js %}
+{% endblock %}

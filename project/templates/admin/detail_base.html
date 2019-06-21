@@ -1,0 +1,34 @@
+{% extends 'admin/admin_base.html' %}
+
+{% block style %}{% endblock %}
+
+
+{% block contents_top %}
+
+    <table class="ui attached inverted selectable center aligned table">
+        <thead>
+        <tr>
+            {% for key in model.list_display %}
+                <th>{{ key | capitalize }}</th>
+            {% endfor %}
+        </tr>
+        </thead>
+        <tbody>
+        <tr class="item">
+            {% if item %}
+                {% for key in model.list_display %}
+                    <td>{{ getattr(item, key) }}</td>
+                {% endfor %}
+            {% endif %}
+        </tr>
+        </tbody>
+    </table>
+    <a href="{{ url_for('admin.' + model.table_name() + '_list')}}" class="ui primary button">목록으로</a>
+
+    <div class="ui hidden divider"></div>
+
+
+{% endblock %}
+
+{% block js %}
+{% endblock %}

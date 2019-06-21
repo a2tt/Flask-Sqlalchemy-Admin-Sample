@@ -1,0 +1,5 @@
+dominate==2.3.5
+SQLAlchemy==1.2.14
+psycopg2==2.7.6.1
+Flask==1.0.3
+Flask-SQLAlchemy==2.3.2

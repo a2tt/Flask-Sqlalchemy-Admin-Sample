@@ -1,0 +1,29 @@
+{#{% extends 'admin/detail_base.html' %}#}
+{% extends 'admin/default/detail_view.html' %}
+{% block title %}{% endblock %}
+
+{% block style %}
+    <style>
+        input:disabled {
+            opacity: 1 !important;
+        }
+
+        .image-container {
+            display: inline-block;
+            max-width: 170px;
+        }
+    </style>
+{% endblock %}
+
+
+{% block contents %}
+    <div class="ui divider"></div>
+    {{ super() }}
+{% endblock %}
+
+{% block js %}
+    <script>
+        (function () {
+        })()
+    </script>
+{% endblock %}

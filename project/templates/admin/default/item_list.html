@@ -1,0 +1,329 @@
+{% extends 'admin/admin_base.html' %}
+
+{% block style %}
+    <style>
+        .item {
+            cursor: pointer;
+        }
+
+        .item-checkbox {
+            width: 18px;
+            height: 18px;
+        }
+
+        .m-10 {
+            margin: 10px !important;
+        }
+
+        .p-10 {
+            padding: 10px !important;
+        }
+
+        .m-0 {
+            margin: 0;
+        }
+
+        .sort-input-container {
+            font-size: 0;
+            width: 100%;
+            margin: 2px;
+        }
+
+        .sort-input-container .label {
+            display: inline-block;
+            width: 50%;
+            font-size: 14px;
+        }
+
+        .sort-input-container .select {
+            display: inline-block;
+            width: 50%;
+            font-size: 14px;
+        }
+
+        .sort-input-container .select select {
+            width: 100%;
+        }
+
+        .filter-input-container {
+            font-size: 0;
+            margin: 2px;
+        }
+
+        .filter-input-container .label {
+            display: inline-block;
+            width: 30%;
+            font-size: 14px;
+        }
+
+        .filter-input-container .input-wrapper {
+            display: inline-block;
+            width: 70%;
+            font-size: 14px;
+        }
+
+        .input-wrapper .bool select {
+            width: 100%;
+        }
+
+        input {
+            width: 100%;
+            padding: 7px 15px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        input::placeholder {
+            text-align: center;
+        }
+
+        select {
+            text-align: center;
+            text-align-last: center;
+        }
+
+        select option {
+            text-align: center;
+        }
+
+        .task-menu {
+            width: 150px;
+        }
+    </style>
+
+
+{% endblock %}
+
+{% block contents %}
+    <div class="ui header">{{ model_name|upper }}</div>
+
+    <div class="ui grid p-10">
+        <!-- 최상단 툴 -->
+        <div class="ui secondary menu row">
+            <div class="left menu">
+                {% if model.creatable %}
+                    <div class="item">
+                        <a href="{{ url_for('admin.' + model.table_name() + '_create') }}"
+                                class="ui primary button">생성</a>
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="right menu">
+                <div class="item">
+                    <select class="ui dropdown" id="q_key">
+                        {% for key in search_keys %}
+                            <option value="{{ key }}">{{ key }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="ui icon input">
+                        <input type="text" placeholder="Search" id="q"
+                               onkeydown="if (event.keyCode === 13) search()">
+                        <i class="search link icon" onclick="search()"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 정렬, 필터링 툴 -->
+        <div class="row">
+            <div class="ui accordion sixteen wide compact column">
+                <div class="ui title horizontal divider header" onclick="toolBoxClick()">
+                    <i class="dropdown icon"></i>Tools
+                </div>
+                <div class="content ui attached segment" id="tool-box">
+                    <div class="ui two column very relaxed grid">
+                        <form class="column"
+                              onsubmit="return toolSearch(this, 'sort');">
+                            <div class="ui small centered header"><i class="sort amount down icon"></i>Sort</div>
+                            <div class="">
+                                {% for key in sort_keys %}
+                                    <div class="sort-input-container">
+                                        <div class="label" id="{{ key }}">{{ key }}</div>
+                                        <div class="select">
+                                            <select name="{{ key }}" id="{{ key }}" class="ui dropdown">
+                                                <option value="">-----</option>
+                                                <option value="desc">Desc</option>
+                                                <option value="asc">Asc</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            {% if sort_keys %}
+                                <button type="submit" class="ui secondary button">검색</button>
+                            {% endif %}
+                        </form>
+
+                        <form class="column"
+                              onsubmit="return toolSearch(this, 'filter');">
+                            <div class="ui small centered header"><i class="filter icon"></i>Filter</div>
+                            <div class="">
+                                {% for key in filter_keys %}
+                                    <div class="filter-input-container">
+                                        {% set type_ = py_type(getattr(model, key)) %}
+                                        <div class="label">{{ key }}</div>
+                                        <div class="input-wrapper">
+                                            {% if type_ == 'int' %}
+                                                <div class="int">
+                                                    <input type="number" name="{{ key }}" placeholder="int">
+                                                </div>
+                                            {% elif type_ == 'float' %}
+                                                <div class="float">
+                                                    <input type="number" name="{{ key }}" step="0.1"
+                                                           placeholder="float">
+                                                </div>
+                                            {% elif type_ == 'bool' %}
+                                                <div class="bool">
+                                                    <select name="{{ key }}" id="" class="ui dropdown">
+                                                        <option value="">-----</option>
+                                                        <option value="1">True</option>
+                                                        <option value="0">False</option>
+                                                    </select>
+                                                </div>
+                                            {% elif type_ == 'str' %}
+                                                <div class="str">
+                                                    <input type="text" name="{{ key }}" placeholder="str">
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            {% if filter_keys %}
+                                <button type="submit" class="ui secondary button">검색</button>
+                            {% endif %}
+                        </form>
+
+                    </div>
+                    <div class="ui vertical divider"><i class="bug icon"></i></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Item table -->
+        <div class="row">
+{#            <div class="ui top attached segment">#}
+{#                <select name="" id="" class="ui dropdown task-menu">#}
+{#                    <option value="">-----</option>#}
+{#                    <option value="delete">delete</option>#}
+{#                </select>#}
+{#            </div>#}
+            <table class="ui attached inverted selectable center aligned table">
+                <thead>
+                <tr>
+{#                    <th><input type="checkbox" class="item-checkbox middle aligned" id="check-all-btn"></th>#}
+                    {% for key in display_keys %}
+                        <th>{{ key | capitalize }}</th>
+                    {% endfor %}
+                </tr>
+                </thead>
+                <tbody>
+                {% for item in items %}
+                    <tr class="item"
+                        onclick="return window.location.href='{{ url_for('admin.' + model_name + '_detail', p_key=item.id) }}'">
+{#                        <td><input type="checkbox" class="item-checkbox middle aligned"#}
+{#                                   data-pkey="{{ getattr(item, item.p_key) }}"></td>#}
+                        {% for key in display_keys %}
+                            <td>{{ getattr(item, key) }}</td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Paginator -->
+        <div class="center aligned row">
+            <div class="column">
+                <div class="ui compact menu">
+                    <a class="{% if not paginator.has_prev %}disabled{% endif %} item"
+                       {% if paginator.has_prev %}href="{{ url_for(request.endpoint, page=paginator.prev_page) }}"
+                       {% endif %}>
+                        <i class="caret left icon"></i>
+                    </a>
+                    {% if 1 not in paginator.near_pages %}
+                        <div class="disabled item">...</div>
+                    {% endif %}
+                    {% for page in paginator.near_pages %}
+                        {% if page == paginator.page %}
+                            <a class="active item">{{ page }}</a>
+                        {% else %}
+                            <a class="item" onclick="return pagination({{ page }})">{{ page }}</a>
+                            {#                            <a class="item" href="{{ url_for(request.endpoint, page=page) }}">{{ page }}</a>#}
+                        {% endif %}
+                    {% endfor %}
+                    {% if paginator.last_page not in paginator.near_pages %}
+                        <div class="disabled item">...</div>
+                    {% endif %}
+
+                    <a class="{% if not paginator.has_next %}disabled{% endif %} item"
+                       {% if paginator.has_next %}href="{{ url_for(request.endpoint, page=paginator.next_page) }}"
+                       {% endif %}>
+                        <i class="caret right icon"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block js %}
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+
+        let init_setting = function () {
+            let toolBox = document.getElementById('tool-box');
+            if (Cookies.get('toolBox') === 'open') {
+                toolBox.classList.add('active')
+            }
+
+            document.getElementById('q_key').value = urlParams.get('q_key') || 'id';
+            document.getElementById('q').value = urlParams.get('q');
+        };
+
+        (function () {
+            init_setting();
+
+        })();
+
+        let toolBoxClick = function () {
+            let toolBox = document.getElementById('tool-box');
+            if (toolBox.classList.contains('active'))// active 상태에서 누름 -> inactive
+                Cookies.set('toolBox', 'close');
+            else
+                Cookies.set('toolBox', 'open');
+        };
+
+        let pagination = function (page) {
+            urlParams.set('page', page);
+            window.location.href = `?${urlParams.toString()}`
+        };
+
+        let search = function () {
+            let q_key = document.getElementById('q_key');
+            let input = document.getElementById('q');
+            urlParams.set('q_key', q_key.options[q_key.selectedIndex].value);
+            urlParams.set('q', input.value);
+            window.location.href = `?${urlParams.toString()}`
+        };
+
+        let toolSearch = function (form, type) {
+            let urlParams = new URLSearchParams();
+            urlParams.set('search', type);
+
+            for (let i = 0; i < form.elements.length; i++) {
+                let field = form.elements[i];
+                if (field.type === 'submit') {
+                    continue;
+                }
+                console.log(field.name, '--------');
+                console.log(form[field.name].value);
+                if (form[field.name].value)
+                    urlParams.set(field.name, form[field.name].value)
+            }
+            window.location.href = `?${urlParams.toString()}`;
+            return false;
+        };
+    </script>
+{% endblock %}

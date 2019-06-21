@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %} - {% if model %}{{ model.table_name() | capitalize }}{% endif %}{% endblock %}</title>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.css"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
+
+    <style>
+        {% if g.stage != 'production' %}
+            body {
+                background-color: lightgray;
+            }
+        {% endif %}
+
+        a {
+            text-decoration: none;
+            color: black;
+        }
+
+        a:hover {
+            color: black;
+        }
+
+        .left-wing {
+            width: 250px !important;
+            min-height: 1000px;
+        }
+
+        .left-wing a {
+            display: block;
+            padding: 15px 20px;
+            color: black;
+            text-decoration: none;
+            text-align: center;
+            border: none;
+        }
+
+        .left-wing a:hover {
+            background-color: #efefef;
+        }
+
+        .contents-wrapper {
+            width: calc(100% - 250px) !important;
+            height: 100%;
+        }
+
+        .image-container img {
+            max-width: 100%;
+        }
+    </style>
+
+    {% block style %}{% endblock %}
+</head>
+<body>
+
+<div>
+    <div class="ui grid admin-container">
+        <div class="sixteen wide column">
+            <h3 class="ui header"></h3>
+        </div>
+
+        <div class="column left-wing">
+            <div class="ui vertical menu">
+                {% for category, models in models.items() %}
+                    <div class="item">
+                        <div class="ui left aligned header">{{ category | upper }}</div>
+                        <div class="menu">
+                            {% for model in models %}
+                                <a href="{{ url_for('admin.' + model.table_name() + '_list')}}">
+                                    {{ model.table_name() | capitalize }}</a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            <div class="ui vertical menu">
+                <div class="item">
+                    <a href="{{ url_for('admin.manage') }}">관리</a>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="column contents-wrapper">
+            <div>
+                {% block contents_top %}{% endblock %}
+                {% block contents %}{% endblock %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.18.0/axios.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qs/6.5.2/qs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@7.26.29/dist/sweetalert2.all.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        $('.ui.accordion').accordion();
+    });
+
+    const toast = swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000
+    });
+    let toast_message = function (type, message, options) {
+        toast({
+            type: type,
+            title: message,
+            width: '25rem',
+            ...options,
+        })
+    }
+
+    let flashMessage = function () {
+        // flash message
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for cate, message in messages %}
+                    Swal.fire({
+                        position: 'center',
+                        type: '{{ cate }}',
+                        title: '{{ message|safe }}',
+                        showConfirmButton: false,
+                        timer: 1200,
+                        width: '80%',
+                    });
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    };
+
+    (function () {
+        flashMessage();
+    })()
+</script>
+{% block js %}
+{% endblock %}
+</body>
+</html>
