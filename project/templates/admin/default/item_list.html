@@ -94,7 +94,7 @@
 {% endblock %}
 
 {% block contents %}
-    <div class="ui header">{{ model_name|upper }}</div>
+    <div class="ui header"><a href="{{ url_for('admin.' + model.table_name() + '_list')}}">{{ model_name|upper }}</a></div>
 
     <div class="ui grid p-10">
         <!-- 최상단 툴 -->
