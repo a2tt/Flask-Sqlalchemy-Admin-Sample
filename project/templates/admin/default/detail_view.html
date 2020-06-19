@@ -51,7 +51,9 @@
         {% if model.deletable %}
             <button class="ui negative button">삭제</button>
         {% endif %}
-
+        
+        {% block contents_extra %}{% endblock %}
+        
         <div class="ui hidden divider"></div>
         <a href="{{ url_for('admin.' + model.table_name() + '_detail', p_key=item.id + 1) }}" class="ui button">이전</a>
         <a href="{{ url_for('admin.' + model.table_name() + '_detail', p_key=item.id - 1) }}" class="ui button">다음</a>
