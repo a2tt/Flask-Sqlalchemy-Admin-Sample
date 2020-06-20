@@ -20,9 +20,8 @@
 {% endmacro %}
 
 {% block contents %}
-    <form action="{{ url_for('admin.' + model.table_name() + '_update', p_key=getattr(item, item.p_key)) }}"
-          method="post"
-          class="ui form">
+    <form action="{% if model.editable %}{{ url_for('admin.' + model.table_name() + '_update', p_key=getattr(item, item.p_key)) }}{% endif %}"
+          method="post" class="ui form">
         <h3 class="ui dividing header">{{ model.table_name() | capitalize }}</h3>
 
         {% if not model.field_group %}

@@ -198,6 +198,12 @@ def update_view_generator(model):
             type_ = model.column_type(key, format_='py')
             if type_ == 'bool':
                 value = True if value in [1, '1', 'true'] else False
+            if value in ['', 'None']:
+                if model.column_is_nullable(key):
+                    value = None
+                else:
+                    value = model.get_default_value(key)
+
             setattr(item, key, value)
 
         db.session.add(item)
@@ -223,7 +229,11 @@ def create_view_generator(model):
                     type_ = model.column_type(key, format_='py')
                     if type_ == 'bool':
                         data[key] = True if value in [1, '1', 'true'] else False
-
+                    if value in ['', 'None']:
+                        if model.column_is_nullable(key):
+                            data[key] = None
+                        else:
+                            data[key] = model.get_default_value(key)
                 item = model(**data)
                 db.session.add(item)
                 db.session.commit()

@@ -154,15 +154,31 @@ class AdminModel:
             return cls.__num_rows
 
     @classmethod
+    def get_column(cls, key):
+        return getattr(cls, key)
+
+    @classmethod
+    def column_is_nullable(cls, key):
+        column = cls.get_column(key)
+        return column.nullable
+
+    @classmethod
+    def get_default_value(cls, key):
+        column = cls.get_column(key)
+        if not column:
+            raise ValueError
+        default = column.default
+        if default:
+            return default.arg
+        return None
+
+    @classmethod
     def column_type(cls, key, format_='py'):
-        # print('---------------')
-        # print(key)
-        # print(getattr(cls, key))
-        # print(type(getattr(cls, key)))
         if type(getattr(cls, key)) == property:  # FIXME :(
             type_ = String
         else:
-            type_ = type(getattr(cls, key).type)
+            column = cls.get_column(key)
+            type_ = type(column.type)
 
         if format_ == 'py':
             if type_ == Integer:

@@ -21,8 +21,8 @@
 {% endmacro %}
 
 {% block contents %}
-    <form action="{{ url_for('admin.' + model.table_name() + '_create') }}" method="post"
-          class="ui form">
+    <form action="{% if model.editable %}{{ url_for('admin.' + model.table_name() + '_update', p_key=getattr(item, item.p_key)) }}{% endif %}"
+          method="post" class="ui form">
         <h3 class="ui dividing header">{{ model.table_name() | capitalize }}</h3>
 
         {% if not model.field_group %}
@@ -45,10 +45,6 @@
 
         <div class="ui hidden divider"></div>
         <button type="submit" class="ui primary button">생성</button>
-
-        {% if model.deletable %}
-            <button class="ui negative button">삭제</button>
-        {% endif %}
     </form>
 
 {% endblock %}
